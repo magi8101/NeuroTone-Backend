@@ -6,19 +6,33 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.colors import HexColor, pink
 import matplotlib.pyplot as plt
 import numpy as np
+import datetime
+import os
 
-def create_voice_pathology_report(detected,pitch,intensity,f1,f2,f3):
+def create_report(detected,pitch,intensity,f1,f2,f3):
+    pdf_filename = "voice_analysis_report.pdf"
+    
     try:
+        # Delete existing PDF if it exists
+        if os.path.exists(pdf_filename):
+            try:
+                os.remove(pdf_filename)
+            except PermissionError:
+                # If file is open elsewhere, use a new filename
+                base, ext = os.path.splitext(pdf_filename)
+                pdf_filename = f"{base}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{ext}"
+            except Exception as e:
+                print(f"Error removing existing PDF: {str(e)}")
+
         # Create the PDF document
         doc = SimpleDocTemplate(
-            "voice_analysis_report.pdf",
+            pdf_filename,
             pagesize=letter,
             rightMargin=0.7*inch,
             leftMargin=0.7*inch,
             topMargin=0.7*inch,
             bottomMargin=0.7*inch
         )
-
         # Custom styles with left alignment
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle(
@@ -78,7 +92,7 @@ def create_voice_pathology_report(detected,pitch,intensity,f1,f2,f3):
 
         # Patient Information section - Changed to paragraphs
         elements.append(Paragraph('Patient Information', section_style))
-        elements.append(Paragraph('Analysis Date: 2025-02-09', normal_style))
+        elements.append(Paragraph(f'Analysis Date: 06-03-25', normal_style))
         elements.append(Paragraph(f'Parkinson\'s Probability: {detected}',normal_style))
 
         # Acoustic Measurements section
@@ -181,11 +195,15 @@ The average vocal intensity maintains within the expected range, indicating adeq
             elements.append(Paragraph(recommendations, normal_style))
 
         
-        doc.build(elements)
-        print("PDF report generated successfully!")
-        
+        try:
+            doc.build(elements)
+            print(f"PDF report generated successfully as {pdf_filename}!")
+            return pdf_filename  # Return the filename in case it was changed
+        except Exception as e:
+            print(f"Error building PDF: {str(e)}")
+            raise
+
     except Exception as e:
         print(f"Error generating PDF: {str(e)}")
+        raise
 
-if __name__ == '__main__':
-    create_voice_pathology_report('Low',2,3,4,5,6)
