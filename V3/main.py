@@ -1,12 +1,16 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import parselmouth
 import numpy as np
 import traceback
 import os
 from typing import Dict, Any
+from pdf.report import create_report
+
 
 app = FastAPI()
+
 
 # Configure CORS
 app.add_middleware(
@@ -71,8 +75,14 @@ async def analyze_and_predict(file: UploadFile = File(...)):
         )
 
         result = "Parkinson's" if prediction == 1 else "Not Parkinson's"
-        
-
+        detected= "High" if prediction==1 else "Low"
+       
+        create_report(detected=detected,pitch=input_data['mean_pitch'],
+            intensity=input_data['mean_intensity'],
+            f1=input_data['f1'],
+            f2=input_data['f2'],
+            f3=input_data['f3'],)
+        print(detected,input_data['mean_intensity'],input_data['mean_pitch'],input_data['f1'],input_data['f2'],input_data['f3'])
         differences = {
             'pitch_diff': round(input_data['mean_pitch'] - thresholds['pitch'], 2),
             'intensity_diff': round(input_data['mean_intensity'] - thresholds['intensity'], 2),
@@ -87,16 +97,19 @@ async def analyze_and_predict(file: UploadFile = File(...)):
             'thresholds': thresholds,
             'differences': differences
         }
+        
 
-    
+        
         with open('b.txt', 'w') as f:
             f.write(str(response_data))
-
-        return response_data
+        
+        return FileResponse('voice_analysis_report.pdf',media_type="application/pdf",headers=headers)
 
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+headers = {"Content-Disposition": "attachment; filename=voice_analysis_report.pdf"} 
+
 
 @app.get("/results")
 async def results():
@@ -151,6 +164,10 @@ def analyze_audio(file_path: str) -> Dict[str, Any]:
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
 
 if __name__ == "__main__":
     import uvicorn
