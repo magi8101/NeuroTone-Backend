@@ -147,7 +147,40 @@ The average vocal intensity falls below the typical range, indicating reduced re
 • Consider complete neurological examination<br/>
 • Regular assessment of other motor symptoms"""
             elements.append(Paragraph(recommendations, normal_style))
-        # Build the PDF
+
+
+        elif detected=="Low":
+            summary = """The acoustic and clinical analysis shows vocal patterns that are largely within normal ranges, with minimal deviations from typical voice production patterns. The measurements of pitch variability, vocal intensity, and formant characteristics fall within expected parameters, suggesting normal laryngeal control and respiratory function."""
+            elements.append(Paragraph(summary, normal_style))
+
+            elements.append(Paragraph('<b>ACOUSTIC ANALYSIS</b>', normal_style))
+            acoustic_analysis = """<b>Fundamental Frequency</b><br/><br/>
+Mean Pitch (F0): Within normal range, demonstrating appropriate pitch control and stability. No significant abnormalities in vocal fold vibration patterns are observed.<br/><br/>
+<b>Voice Intensity Measures</b><br/><br/>
+The average vocal intensity maintains within the expected range, indicating adequate respiratory support and normal vocal projection capabilities.<br/><br/>
+<b>Formant Analysis</b><br/><br/>
+• F1: Within normal parameters, indicating appropriate jaw opening and tongue height control<br/>
+• F2: Shows normal range of movement, suggesting healthy tongue mobility<br/>
+• F3: Values consistent with typical vocal tract configuration and articulation<br/><br/>
+<b>Clinical Significance:</b> The acoustic measurements are predominantly within normal limits, showing no significant indicators of parkinsonian voice changes. The stability in formant patterns and appropriate intensity control suggest healthy vocal function."""
+            elements.append(Paragraph(acoustic_analysis, normal_style))
+
+            elements.append(Paragraph('<b>RECOMMENDATIONS</b>', normal_style))
+            recommendations = """<b>1. Preventive Care</b><br/>
+• Maintain regular voice health check-ups<br/>
+• Practice good vocal hygiene<br/><br/>
+<b>2. Voice Maintenance</b><br/>
+• Continue normal voice use<br/>
+• Stay hydrated and maintain healthy vocal habits<br/><br/>
+<b>3. Follow-Up</b><br/>
+• Routine annual voice screening<br/>
+• Monitor for any significant changes in voice quality<br/><br/>
+<b>4. General Recommendations</b><br/>
+• Maintain regular exercise and healthy lifestyle<br/>
+• Report any new voice-related concerns to healthcare provider"""
+            elements.append(Paragraph(recommendations, normal_style))
+
+        
         doc.build(elements)
         print("PDF report generated successfully!")
         
@@ -155,4 +188,4 @@ The average vocal intensity falls below the typical range, indicating reduced re
         print(f"Error generating PDF: {str(e)}")
 
 if __name__ == '__main__':
-    create_voice_pathology_report('High',2,3,4,5,6)
+    create_voice_pathology_report('Low',2,3,4,5,6)
