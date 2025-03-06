@@ -74,10 +74,12 @@ def create_voice_pathology_report(detected,pitch,intensity,f1,f2,f3):
         elements.append(header_table)
         elements.append(Spacer(1, 20))
 
+   
+
         # Patient Information section - Changed to paragraphs
         elements.append(Paragraph('Patient Information', section_style))
         elements.append(Paragraph('Analysis Date: 2025-02-09', normal_style))
-        elements.append(Paragraph(f'Parkinson detected: {detected}',normal_style))
+        elements.append(Paragraph(f'Parkinson\'s Probability: {detected}',normal_style))
 
         # Acoustic Measurements section
         elements.append(Paragraph('Acoustic Measurements', section_style))
@@ -111,32 +113,40 @@ def create_voice_pathology_report(detected,pitch,intensity,f1,f2,f3):
         elements.append(Paragraph('Detailed Analysis', section_style))
         elements.append(Paragraph('<b>VOICE PATHOLOGY MEDICAL REPORT</b>', normal_style))
         elements.append(Paragraph('<b>PATIENT INFORMATION</b>', normal_style))
-        elements.append(Paragraph('Analysis Date: 2025-02-09 Predicted Condition: Vocal Polyp (89.33%)', normal_style))
+        elements.append(Paragraph(f'Analysis Date: 2025-02-09', normal_style))
+        elements.append(Paragraph(f'Parkinson\'s Probability: {detected}', normal_style))
         elements.append(Paragraph('<b>SUMMARY OF FINDINGS</b>', normal_style))
         
-        summary = """The acoustic and clinical analysis reveals <b>significant</b> voice abnormalities consistent with a vocal polyp. The
-        patient exhibits altered voice quality, increased perturbation measures, and deviations in fundamental
-        frequency, suggesting a structural lesion on the vocal fold. These findings are clinically significant as they
-        indicate impaired vocal fold function and potential chronic voice discomfort."""
-        elements.append(Paragraph(summary, normal_style))
+        if detected=="High":
+            summary = """The acoustic and clinical analysis indicates vocal patterns consistent with early parkinsonian changes in voice production. Key findings include reduced pitch variability, 
+            decreased vocal intensity, and altered formant characteristics. These abnormalities are typical indicators of the subtle motor changes affecting laryngeal control and respiratory support."""
+            elements.append(Paragraph(summary, normal_style))
 
-        elements.append(Paragraph('<b>ACOUSTIC ANALYSIS</b>', normal_style))
-        acoustic_analysis = """Fundamental Frequency:
-        - Mean: 267.23 Hz - Standard Deviation: 60.16 Hz - Clinical Significance: The mean fundamental frequency
-        is within normal limits for an adult male voice. However, the elevated standard deviation indicates instability in
-        pitch production, which is often associated with vocal fold lesions such as polyps.
-        
-        Voice Perturbation Measures:
-        - Jitter: 2.34% - Shimmer: 79.80% - Harmonic Ratio: 0.003 - Clinical Significance: The jitter value is within
-        normal limits, suggesting relatively stable pitch variations. However, the significantly elevated shimmer and
-        reduced harmonic ratio indicate increased amplitude variations and poor harmonic structure, respectively.
-        These findings are characteristic of a vocal polyp, which disrupts smooth vibration of the vocal folds.
-        
-        Additional Measurements:
-        - Voice Period: 0.0037 seconds - Voiced Segments Ratio: 0.73 - Formant Frequency: 1463.52 Hz - Clinical
-        Significance: The voice period is slightly prolonged, reflecting irregular vocal fold closure. The voiced"""
-        elements.append(Paragraph(acoustic_analysis, normal_style))
-
+            elements.append(Paragraph('<b>ACOUSTIC ANALYSIS</b>', normal_style))
+            acoustic_analysis = """<b>Fundamental Frequency</b><br/><br/>
+Mean Pitch (F0): Significantly above the normal range, showing reduced pitch control and stability. This elevation is commonly associated with early parkinsonian voice changes.<br/><br/>
+<b>Voice Intensity Measures</b><br/><br/>
+The average vocal intensity falls below the typical range, indicating reduced respiratory support and diminished vocal projection typical in parkinsonian speech.<br/><br/>
+<b>Formant Analysis</b><br/><br/>
+• F1: Shows deviation from normal range, suggesting altered jaw opening and tongue height control<br/>
+• F2: Demonstrates restricted movement range, indicating reduced tongue mobility<br/>
+• F3: Values indicate changes in vocal tract configuration and articulation<br/><br/>
+<b>Clinical Significance:</b> The combination of these acoustic measures, particularly the altered formant patterns and reduced intensity control, strongly suggests early parkinsonian voice changes."""
+            elements.append(Paragraph(acoustic_analysis, normal_style))
+            elements.append(Paragraph('<b>RECOMMENDATIONS</b>', normal_style))
+            recommendations = """<b>1. Medical Management</b><br/>
+• Referral to a neurologist for comprehensive evaluation<br/>
+• Consider speech therapy assessment<br/><br/>
+<b>2. Voice Therapy</b><br/>
+• Early intervention with speech-language pathologist<br/>
+• Focus on respiratory support and voice strengthening exercises<br/><br/>
+<b>3. Follow-Up</b><br/>
+• Regular monitoring of voice parameters every 3-4 months<br/>
+• Track progression of vocal changes<br/><br/>
+<b>4. Additional Testing</b><br/>
+• Consider complete neurological examination<br/>
+• Regular assessment of other motor symptoms"""
+            elements.append(Paragraph(recommendations, normal_style))
         # Build the PDF
         doc.build(elements)
         print("PDF report generated successfully!")
