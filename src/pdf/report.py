@@ -10,6 +10,10 @@ import datetime
 import os
 from reportlab.platypus import Image,KeepTogether
 import matplotlib.pyplot as plt
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+
+
 
 def create_report(detected,pitch,intensity,f1,f2,f3):
     pdf_filename = "voice_analysis_report.pdf"
@@ -35,6 +39,7 @@ def create_report(detected,pitch,intensity,f1,f2,f3):
             topMargin=0.7*inch,
             bottomMargin=0.7*inch
         )
+        
     
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle(
