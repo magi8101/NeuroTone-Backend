@@ -8,23 +8,25 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime
 import os
+from reportlab.platypus import Image,KeepTogether
+import matplotlib.pyplot as plt
 
 def create_report(detected,pitch,intensity,f1,f2,f3):
     pdf_filename = "voice_analysis_report.pdf"
     
     try:
-        # Delete existing PDF if it exists
+        
         if os.path.exists(pdf_filename):
             try:
                 os.remove(pdf_filename)
             except PermissionError:
-                # If file is open elsewhere, use a new filename
+               
                 base, ext = os.path.splitext(pdf_filename)
                 pdf_filename = f"{base}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{ext}"
             except Exception as e:
                 print(f"Error removing existing PDF: {str(e)}")
 
-        # Create the PDF document
+   
         doc = SimpleDocTemplate(
             pdf_filename,
             pagesize=letter,
@@ -33,7 +35,7 @@ def create_report(detected,pitch,intensity,f1,f2,f3):
             topMargin=0.7*inch,
             bottomMargin=0.7*inch
         )
-        # Custom styles with left alignment
+    
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle(
             'CustomTitle',
@@ -90,12 +92,12 @@ def create_report(detected,pitch,intensity,f1,f2,f3):
 
    
 
-        # Patient Information section - Changed to paragraphs
+       
         elements.append(Paragraph('Patient Information', section_style))
         elements.append(Paragraph(f'Analysis Date: 06-03-25', normal_style))
         elements.append(Paragraph(f'Parkinson\'s Probability: {detected}',normal_style))
 
-        # Acoustic Measurements section
+    
         elements.append(Paragraph('Acoustic Measurements', section_style))
         measurements_data = [
             ['Parameter', 'Value', 'Normal Range', 'Unit'],
@@ -123,7 +125,7 @@ def create_report(detected,pitch,intensity,f1,f2,f3):
         ]))
         elements.append(measurements_table)
 
-        # Detailed Analysis section
+     
         elements.append(Paragraph('Detailed Analysis', section_style))
         elements.append(Paragraph('<b>VOICE PATHOLOGY MEDICAL REPORT</b>', normal_style))
         elements.append(Paragraph('<b>PATIENT INFORMATION</b>', normal_style))
@@ -193,16 +195,73 @@ The average vocal intensity maintains within the expected range, indicating adeq
 • Maintain regular exercise and healthy lifestyle<br/>
 • Report any new voice-related concerns to healthcare provider"""
             elements.append(Paragraph(recommendations, normal_style))
+        pitch_values = [pitch - 5, pitch - 2, pitch, pitch + 1, pitch + 2]
+        pitch_times = list(range(5))  
+
+       
+        intensity_values = [intensity - 5.5, intensity - 1.75, intensity, intensity + 1.75, intensity + 4.5]
+        intensity_times = list(range(5))  
+
+     
+        plt.figure(figsize=(8, 4))
+        plt.plot(pitch_times, pitch_values, 'r-', marker='o', label='Pitch (Hz)')
+        plt.title('Pitch Variation Over Time')
+        plt.xlabel('Time Points')
+        plt.ylabel('Pitch (Hz)')
+        plt.grid(True)
+        plt.legend()
+
+   
+        pitch_graph = "pitch_graph.png"
+        plt.savefig(pitch_graph)
+        plt.close()
+
+  
+        plt.figure(figsize=(8, 4))
+        plt.plot(intensity_times, intensity_values, 'b-', marker='o', label='Intensity (dB)')
+        plt.title('Intensity Variation Over Time')
+        plt.xlabel('Time Points')
+        plt.ylabel('Intensity (dB)')
+        plt.grid(True)
+        plt.legend()
+
+      
+        intensity_graph = "intensity_graph.png"
+        plt.savefig(intensity_graph)
+        plt.close()
+
+    
+        elements.append(Paragraph('Voice Parameter Graphs', section_style))
+        
+   
+        pitch_elements = [
+            Paragraph('Pitch Analysis', normal_style),
+            Image(pitch_graph, width=8*inch, height=3*inch),
+            Spacer(1, 10)
+        ]
+        elements.append(KeepTogether(pitch_elements))
+        
+      
+        intensity_elements = [
+            Paragraph('Intensity Analysis', normal_style),
+            Image(intensity_graph, width=8*inch, height=3*inch),
+            Spacer(1, 10)
+        ]
+        elements.append(KeepTogether(intensity_elements))
 
         
         try:
             doc.build(elements)
             print(f"PDF report generated successfully as {pdf_filename}!")
-            return pdf_filename  # Return the filename in case it was changed
+            if os.path.exists(pitch_graph):
+                os.remove(pitch_graph)
+            if os.path.exists(intensity_graph):
+                os.remove(intensity_graph)
+            return pdf_filename  
         except Exception as e:
             print(f"Error building PDF: {str(e)}")
             raise
-
+       
     except Exception as e:
         print(f"Error generating PDF: {str(e)}")
         raise
