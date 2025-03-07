@@ -5,13 +5,18 @@ import parselmouth
 import numpy as np
 import traceback
 import os
-from typing import Dict, Any
+from typing import Dict, Any,List
 from pdf.report import create_report
+from tensorflow.keras.models import load_model
+from PIL import Image
+import io
+import tensorflow as tf
+import cv2
 
 
 app = FastAPI()
 
-
+labels: List[str] = ['Healthy', 'Parkinson']
 
 app.add_middleware(
     CORSMiddleware,
@@ -168,6 +173,60 @@ def analyze_audio(file_path: str) -> Dict[str, Any]:
 async def reports():
     headers = {"Content-Disposition": "attachment; filename=voice_analysis_report.pdf"} 
     return FileResponse('voice_analysis_report.pdf',media_type="application/pdf",headers=headers)
+
+def preprocess_image(image):
+    img_array = np.array(image)
+    if len(img_array.shape) == 3:
+        img_array = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+    img_array = cv2.resize(img_array, (128, 128))
+    img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
+    img_array = np.expand_dims(img_array, axis=0) 
+    img_array = np.expand_dims(img_array, axis=-1)  
+    
+    return img_array
+
+model = load_model('scribble/parkinson_disease_detection.h5')
+
+@app.post("/scribble")
+async def scribble(file: UploadFile = File(...)):
+    try:
+
+        if not file.content_type.startswith('image/'):
+            return {
+                "error": "Uploaded file must be an image",
+                "status": "error"
+            }
+        
+
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents))
+        
+  
+        processed_image = preprocess_image(image)
+        
+
+        if processed_image.shape != (1, 128, 128, 1):
+            return {
+                "error": f"Invalid image shape after processing: {processed_image.shape}",
+                "status": "error"
+            }
+        
+
+        prediction = model.predict(processed_image)
+        predicted_class = int(np.argmax(prediction[0], axis=0)) 
+        confidence = float(prediction[0][predicted_class])  
+        return {
+            "prediction": labels[predicted_class],
+            "has_parkinsons": bool(predicted_class == 1),
+            "confidence": confidence,
+            "status": "success"
+        }
+        
+    except Exception as e:
+        return {
+            "error": str(e),
+            "status": "error"
+        }
 
 
 
