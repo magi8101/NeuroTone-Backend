@@ -12,7 +12,7 @@ from pdf.report import create_report
 app = FastAPI()
 
 
-# Configure CORS
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -102,13 +102,12 @@ async def analyze_and_predict(file: UploadFile = File(...)):
         
         with open('b.txt', 'w') as f:
             f.write(str(response_data))
-        
+        headers = {"Content-Disposition": "attachment; filename=voice_analysis_report.pdf"} 
         return FileResponse('voice_analysis_report.pdf',media_type="application/pdf",headers=headers)
 
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-headers = {"Content-Disposition": "attachment; filename=voice_analysis_report.pdf"} 
 
 
 @app.get("/results")
@@ -165,7 +164,10 @@ def analyze_audio(file_path: str) -> Dict[str, Any]:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
-
+@app.get('/report')
+async def reports():
+    headers = {"Content-Disposition": "attachment; filename=voice_analysis_report.pdf"} 
+    return FileResponse('voice_analysis_report.pdf',media_type="application/pdf",headers=headers)
 
 
 
