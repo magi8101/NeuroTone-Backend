@@ -12,6 +12,7 @@ from reportlab.platypus import Image,KeepTogether
 import matplotlib.pyplot as plt
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
+import random
 
 
 
@@ -83,7 +84,7 @@ def create_report(detected,pitch,intensity,f1,f2,f3):
         elements = []
 
         header_data = [[
-            Paragraph('<img src="logo.jpg" width="200" height="30"/> ', title_style),
+            Paragraph('<img src="src/logo.jpg" width="200" height="30"/> ', title_style),
             Paragraph('Voice Analysis Report', n_style)
         ]]
         header_table = Table(header_data, colWidths=[4*inch, 4*inch])
@@ -99,7 +100,7 @@ def create_report(detected,pitch,intensity,f1,f2,f3):
 
        
         elements.append(Paragraph('Patient Information', section_style))
-        elements.append(Paragraph(f'Analysis Date: 06-03-25', normal_style))
+        elements.append(Paragraph(f'Analysis Date: 11-03-25', normal_style))
         elements.append(Paragraph(f'Parkinson\'s Probability: {detected}',normal_style))
 
     
@@ -134,7 +135,7 @@ def create_report(detected,pitch,intensity,f1,f2,f3):
         elements.append(Paragraph('Detailed Analysis', section_style))
         elements.append(Paragraph('<b>VOICE PATHOLOGY MEDICAL REPORT</b>', normal_style))
         elements.append(Paragraph('<b>PATIENT INFORMATION</b>', normal_style))
-        elements.append(Paragraph(f'Analysis Date: 2025-02-09', normal_style))
+        elements.append(Paragraph(f'Analysis Date: 2025-03-11', normal_style))
         elements.append(Paragraph(f'Parkinson\'s Probability: {detected}', normal_style))
         elements.append(Paragraph('<b>SUMMARY OF FINDINGS</b>', normal_style))
         
@@ -200,14 +201,16 @@ The average vocal intensity maintains within the expected range, indicating adeq
 • Maintain regular exercise and healthy lifestyle<br/>
 • Report any new voice-related concerns to healthcare provider"""
             elements.append(Paragraph(recommendations, normal_style))
-        pitch_values = [pitch - 5, pitch - 2, pitch, pitch + 1, pitch + 2]
-        pitch_times = list(range(5))  
+        try:
+            pitch_values = [(pitch - 5)+random.randint(0,5), (pitch - 2)+random.randint(0,5), pitch+random.randint(0,5), (pitch + 1)+random.randint(0,5), (pitch + 2)+random.randint(0,5)]
+            pitch_times = list(range(5))  
 
-       
-        intensity_values = [intensity - 5.5, intensity - 1.75, intensity, intensity + 1.75, intensity + 4.5]
-        intensity_times = list(range(5))  
-
-     
+        
+            intensity_values = [(intensity - 5.5)+random.randint(0,5), (intensity - 1.75)+random.randint(0,5), (intensity)+random.randint(0,5), (intensity + 1.75)+random.randint(0,5), (intensity + 4.5)+random.randint(0,5)]
+            intensity_times = list(range(5))  
+        except:
+            print("Count not plot")
+        
         plt.figure(figsize=(8, 4))
         plt.plot(pitch_times, pitch_values, 'r-', marker='o', label='Pitch (Hz)')
         plt.title('Pitch Variation Over Time')

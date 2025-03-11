@@ -185,7 +185,7 @@ def preprocess_image(image):
     
     return img_array
 
-model = load_model('scribble/parkinson_disease_detection.h5')
+model = load_model('src/scribble/parkinson_disease_detection.h5')
 
 @app.post("/scribble")
 async def scribble(file: UploadFile = File(...)):
