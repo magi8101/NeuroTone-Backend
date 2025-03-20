@@ -1,0 +1,20 @@
+# Core dependencies
+numpy==1.23.5
+pandas==2.0.1
+matplotlib==3.7.1
+opencv-python-headless==4.7.0.72  # Use headless version for Docker
+Pillow==9.5.0
+scikit-learn==1.2.2
+tensorflow-cpu==2.12.0
+absl-py==2.1.0
+
+# Web Framework
+fastapi==0.95.1
+uvicorn==0.22.0
+python-multipart==0.0.6
+
+# Additional libraries
+deap==1.4.2
+praat-parselmouth==0.4.2
+reportlab==3.6.12
+seaborn==0.12.2
