@@ -1,10 +1,14 @@
 import os
 import logging
-import traceback
-from datetime import datetime
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Suppress TensorFlow logging
+logging.getLogger('tensorflow').setLevel(logging.ERROR)
+
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+import parselmouth
+import numpy as np
+import traceback
 from typing import Dict, Any, List
 from src.pdf.report import create_report
 from tensorflow.keras.models import load_model
@@ -12,11 +16,6 @@ from PIL import Image
 import io
 import tensorflow as tf
 import cv2
-import numpy as np
-import parselmouth
-
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Suppress TensorFlow logging
-logging.getLogger('tensorflow').setLevel(logging.ERROR)
 
 app = FastAPI()
 
@@ -50,11 +49,7 @@ async def analyze_and_predict(file: UploadFile = File(...)):
 
         analysis_results = analyze_audio(file_path)
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        result_filename = f"result_{timestamp}_{file.filename}.txt"
-        result_filepath = os.path.join('results', result_filename)
-        os.makedirs('results', exist_ok=True)
-        with open(result_filepath, 'w') as f:
+        with open('a.txt', 'w') as f:
             f.write(str(analysis_results))
 
         os.remove(file_path)
@@ -87,13 +82,11 @@ async def analyze_and_predict(file: UploadFile = File(...)):
         result = "Parkinson's" if prediction == 1 else "Not Parkinson's"
         detected = "High" if prediction == 1 else "Low"
 
-        report_filename = f"report_{timestamp}_{file.filename}.pdf"
-        report_filepath = os.path.join('results', report_filename)
         create_report(detected=detected, pitch=input_data['mean_pitch'],
                       intensity=input_data['mean_intensity'],
                       f1=input_data['f1'],
                       f2=input_data['f2'],
-                      f3=input_data['f3'], file_path=report_filepath)
+                      f3=input_data['f3'],)
         print(detected, input_data['mean_intensity'], input_data['mean_pitch'], input_data['f1'], input_data['f2'], input_data['f3'])
         differences = {
             'pitch_diff': round(input_data['mean_pitch'] - thresholds['pitch'], 2),
@@ -110,13 +103,10 @@ async def analyze_and_predict(file: UploadFile = File(...)):
             'differences': differences
         }
 
-        response_filename = f"response_{timestamp}_{file.filename}.txt"
-        response_filepath = os.path.join('results', response_filename)
-        with open(response_filepath, 'w') as f:
+        with open('b.txt', 'w') as f:
             f.write(str(response_data))
-
-        headers = {"Content-Disposition": f"attachment; filename={report_filename}"}
-        return FileResponse(report_filepath, media_type="application/pdf", headers=headers)
+        headers = {"Content-Disposition": "attachment; filename=voice_analysis_report.pdf"}
+        return FileResponse('voice_analysis_report.pdf', media_type="application/pdf", headers=headers)
 
     except Exception as e:
         traceback.print_exc()
@@ -124,21 +114,13 @@ async def analyze_and_predict(file: UploadFile = File(...)):
 
 
 @app.get("/results")
-async def get_results():
+async def results():
     try:
-        result_files = os.listdir('results')
-        return {"results": result_files}
+        with open('b.txt', 'r') as f:
+            data = eval(f.read())
+        return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/results/{filename}")
-async def download_result(filename: str):
-    file_path = os.path.join('results', filename)
-    if os.path.exists(file_path):
-        return FileResponse(file_path, media_type='text/plain', filename=filename)
-    else:
-        raise HTTPException(status_code=404, detail="File not found")
 
 
 def heuristic_model(mean_pitch: float, mean_intensity: float, f1: float, f2: float, f3: float, thresholds: Dict[str, float]) -> int:
@@ -153,6 +135,7 @@ def heuristic_model(mean_pitch: float, mean_intensity: float, f1: float, f2: flo
 
 def analyze_audio(file_path: str) -> Dict[str, Any]:
     try:
+
         sound = parselmouth.Sound(file_path)
 
         pitch = sound.to_pitch()
@@ -181,7 +164,6 @@ def analyze_audio(file_path: str) -> Dict[str, Any]:
 
     except Exception as e:
         traceback.print_exc()
-        # Corrected line in main.py
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -242,6 +224,7 @@ async def scribble(file: UploadFile = File(...)):
             "error": str(e),
             "status": "error"
         }
+
 
 if __name__ == "__main__":
     import uvicorn
