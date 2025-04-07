@@ -181,7 +181,8 @@ def analyze_audio(file_path: str) -> Dict[str, Any]:
 
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail:str(e))
+        # Corrected line in main.py
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get('/report')
